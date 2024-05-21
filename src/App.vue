@@ -1,47 +1,76 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
-</script>
-
+<!-- App.vue -->
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="i did it!" />
+  <div id="app">
+    <h1>Sentiment Analysis</h1>
+    <textarea v-model="inputText" placeholder="Enter text to analyze"></textarea>
+    <button @click="analyze">Analyze</button>
+    <div v-if="loading" class="loading">Loading...</div>
+    <div v-if="sentiment" class="result">
+      <h2>Analysis Result</h2>
+      <p>Sentiment: {{ sentiment.label }}</p>
+      <p>Confidence: {{ sentiment.confidence }}</p>
     </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-  </main>
+  </div>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
+<script>
+import axios from 'axios';
+
+export default {
+  data() {
+    return {
+      inputText: '',
+      sentiment: null,
+      loading: false
+    };
+  },
+  methods: {
+    analyze() {
+      if (this.inputText.trim() === '') {
+        alert('Please enter some text.');
+        return;
+      }
+      this.loading = true;
+      axios.post('https://render-frontend-main-3.onrender.com', {
+        text: this.inputText
+      })
+      .then(response => {
+        this.sentiment = response.data;
+      })
+      .catch(error => {
+        console.error('Error analyzing sentiment:', error);
+      })
+      .finally(() => {
+        this.loading = false;
+      });
+    }
+  }
+};
+</script>
+
+<style>
+#app {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
 }
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+textarea {
+  width: 100%;
+  height: 150px;
+  margin-bottom: 10px;
 }
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+.loading {
+  margin-top: 20px;
+}
+.result {
+  margin-top: 20px;
 }
 </style>
